@@ -1,0 +1,5 @@
+node_modules
+install.sh
+root.tar.gz
+user.tar.gz
+.env

@@ -1,0 +1,37 @@
+{
+	"name": "@daiyam/rice-arch-install",
+	"description": "",
+	"version": "0.0.0",
+	"author": {
+		"name": "Baptiste Augrain",
+		"email": "daiyam@zokugun.org"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kaoscript/kaoscript"
+	},
+	"bugs": {
+		"url": "https://github.com/kaoscript/kaoscript/issues"
+	},
+	"license": "MIT",
+	"licenses": [
+		{
+			"type": "MIT",
+			"url": "http://www.opensource.org/licenses/mit-license.php"
+		}
+	],
+	"private": true,
+	"dependencies": {
+		"@zokugun/template": "^0.3.0",
+		"dotenv": "^8.0.0",
+		"execa": "^1.0.0",
+		"httpserver": "^0.3.0",
+		"ip": "^1.1.5",
+		"js-yaml": "^3.13.1",
+		"kaoscript": "^0.9.1"
+	},
+	"scripts": {
+		"build": "kaoscript build.ks",
+		"start": "httpserver 8000"
+	}
+}

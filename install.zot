@@ -1,0 +1,128 @@
+#!/bin/bash
+
+# configure pacman
+sed -i 's/^#TotalDownload/TotalDownload\nILoveCandy/' /etc/pacman.conf
+sed -i 's/^#Color/Color/' /etc/pacman.conf
+
+# set time
+timedatectl set-ntp true
+
+#partiton disk
+wipefs -a /dev/sda
+
+parted --align=optimal -s /dev/sda \
+    mklabel msdos \
+    mkpart primary ext4 0% 100%
+
+mkfs.ext4 /dev/sda1
+
+mount /dev/sda1 /mnt
+
+# pacstrap
+pacstrap /mnt base
+
+# fstab
+genfstab -U /mnt >> /mnt/etc/fstab
+
+# chroot
+arch-chroot /mnt /bin/bash << EOF
+# configure pacman
+sed -i 's/^#TotalDownload/TotalDownload\nILoveCandy/' /etc/pacman.conf
+sed -i 's/^#Color/Color/' /etc/pacman.conf
+sed -ni '$!N;s@#\[multilib\]\n#Include = \/etc\/pacman.d\/mirrorlist@\[multilib\]\nInclude = \/etc\/pacman.d\/mirrorlist@;P;D' /etc/pacman.conf
+
+{{?rankmirrors}}
+	# setup mirrors
+    echo 'Setting up mirrors'
+    cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+    sed -i 's/^#Server/Server/' /etc/pacman.d/mirrorlist.backup
+    rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+{{?}}
+
+# update packages
+pacman -Syyu
+
+# setup timezone
+echo 'Setting up timezone'
+timedatectl set-ntp true
+ln -sf /usr/share/zoneinfo/{{:timezone}} /etc/localtime
+timedatectl set-timezone {{:timezone}}
+hwclock --systohc
+
+# setup locale
+echo 'Setting up locale'
+sed -i 's/^#{{:locale}}/{{:locale}}/' /etc/locale.gen
+locale-gen
+echo 'LANG={{:locale}}' > /etc/locale.conf
+
+# setup keyboard
+# echo KEYMAP=fr > /etc/vconsole.conf
+
+# setup hostname
+echo 'Setting up hostname'
+echo '{{:hostname}}' > /etc/hostname
+echo '127.0.1.1 {{:hostname}}.localdomain {{:hostname}}' >> /etc/hosts
+
+# setup dns
+echo 'Setting up dns'
+echo 'name_servers="8.8.8.8 8.8.4.4"' >> /etc/resolvconf.conf
+
+# build
+echo 'Building'
+mkinitcpio -p linux
+
+# setup root
+curl http://{{:ip}}:8000/root.tar.gz | tar xz --no-same-owner --no-same-permissions -C /
+
+# setup user
+echo 'Setting up user'
+read -t 1 -n 1000000 discard      # discard previous input
+echo 'root:{{:password}}' | chpasswd
+useradd -m -G wheel -s /bin/bash {{:username}}
+echo {{:username}}:{{:password}} | chpasswd
+echo '%wheel ALL=(ALL) ALL' >> /etc/sudoers
+
+rm -rf /home/{{:username}}/*
+EOF
+
+# disable password
+arch-chroot /mnt /bin/bash << EOF
+echo 'Defaults:root !authenticate' >> /etc/sudoers
+echo 'Defaults:{{:username}} !authenticate' >> /etc/sudoers
+EOF
+
+# install user's config
+arch-chroot /mnt /bin/su - {{:username}} << EOF
+curl http://{{:ip}}:8000/user.tar.gz | tar xz -C .
+EOF
+
+# install pacman's packages
+{{:printPacmanPackages()}}
+
+# install aur's packages
+{{:printAurPackages()}}
+
+# install yay's packages
+{{:printYayPackages()}}
+
+# execute commands
+{{:printCommands()}}
+
+# change user' shell
+arch-chroot /mnt /bin/bash << EOF
+usermod -s /usr/bin/fish baptiste
+EOF
+
+# execute fish's commands
+{{:printFishCommands()}}
+
+# enable password
+arch-chroot /mnt /bin/bash << EOF
+sed -i '/!authenticate$/d' /etc/sudoers
+EOF
+
+echo 'Done'
+
+# reboot
+umount -R /mnt
+reboot

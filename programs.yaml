@@ -1,0 +1,174 @@
+system:
+  - name: base-devel
+  - name: dhclient
+    postinstall: |
+      systemctl enable dhcpcd.service
+  - name: fakeroot
+  - name: fish
+  - name: git
+  - name: go-pie
+  - name: grub
+    postinstall: |
+      grub-install --target=i386-pc /dev/sda
+      sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=1/g' /etc/default/grub
+      grub-mkconfig -o /boot/grub/grub.cfg
+  - name: linux-headers
+  - name: net-tools
+  - name: networkmanager
+    postinstall: |
+      systemctl enable netctl.service
+  - name: ntfs-3g
+  - name: ntp
+    postinstall: |
+      systemctl enable ntpdate.service
+  - name: parted
+  - name: polkit-kde-agent
+  - name: pulseaudio
+  - name: pulseaudio-alsa
+  - name: pulsemixer
+  - name: sddm
+    postinstall:
+      - command: |
+          mkdir /var/lib/sddm
+          chown -R sddm:sddm /var/lib/sddm
+          systemctl enable sddm.service
+  - name: sddm-theme-deepin
+    yay: aur/sddm-theme-deepin-git
+  - name: unrar
+  - name: unzip
+  - name: wget
+  - name: xorg
+  - name: xorg-xdpyinfo
+  - name: xorg-xinit
+  - name: yay
+    aur: https://aur.archlinux.org/yay.git
+
+shell:
+  - name: cmatrix
+  - name: entr
+  - name: fisher
+    yay: aur/fisher
+    postinstall:
+      - command: |
+          fisher
+        shell: fish
+  - name: kitty
+  - name: imagemagick
+  - name: lsd
+  - name: neofetch
+  - name: neovim
+  - name: powerline
+    yay: aur/powerline-go
+  - name: ranger
+  - name: unimatrix
+    yay: aur/unimatrix-git
+
+utility:
+  - name: atool
+  - name: bc
+  - name: downgrade
+    yay: aur/downgrade
+  - name: gnome-disk-utility
+  - name: hardinfo
+  - name: hfsprogs
+    yay: aur/hfsprogs
+  - name: ksysguard
+  - name: lxqt-admin
+  - name: lxqt-config
+  - name: mediainfo
+  - name: mlocate
+    postinstall: |
+      updatedb
+  - name: openssh
+    postinstall: |
+      systemctl enable sshd.service
+  - name: pamac
+    yay: aur/pamac-aur
+  - name: perl-image-exiftool
+  - name: p7zip
+  - name: sxhkd
+  - name: ulauncher
+    yay: aur/ulauncher
+  - name: zip
+
+windows:
+  - name: awesome
+  - name: breeze
+  - name: capitaine-cursors
+  - name: compton
+  - name: dolphin
+  - name: luarocks
+  - name: network-manager-applet
+  - name: osx-el-capitan-theme-git
+    yay: aur/osx-el-capitan-theme-git
+  - name: qt5ct
+
+font:
+  - name: adobe-base-14-fonts
+    aur: https://aur.archlinux.org/adobe-base-14-fonts.git
+    premake: |
+      sed -i 's/ftp:\/\/ftp\.adobe\.com\/pub\/adobe\/acrobatreader\/unix\/3\.x\/acroread_linux_301\.tar\.gz/http:\/\/ftp\.sunet\.se\/mirror\/archive\/ftp\.sunet\.se\/pub\/vendor\/adobe\/adobe\/acrobatreader\/unix\/3\.x\/acroread_linux_301\.tar\.gz/' PKGBUILD
+  - name: ttf-dejavu
+  - name: ttf-merriweather
+    yay: aur/ttf-merriweather
+  - name: ttf-monaco
+    yay: aur/ttf-monaco
+  - name: noto-fonts-main
+    yay: aur/noto-fonts-main
+  - name: otf-overpass
+  - name: nerd-fonts-ricty
+    yay: aur/nerd-fonts-ricty
+  - name: ttf-roboto
+  - name: ttf-sourcesanspro
+    yay: aur/ttf-sourcesanspro
+
+applications:
+  - name: aseprite
+    yay: aur/aseprite
+  - name: backintime
+  - name: boostnote
+    yay: aur/boostnote-bin
+  - name: digikam
+  - name: elisa
+  - name: filelight
+  - name: firefox
+  - name: flatpak
+  - name: font-manager
+    yay: aur/font-manager
+  - name: gnome-documents
+  - name: gnome-font-viewer
+  - name: google-chrome
+    yay: aur/google-chrome
+  - name: kate
+  - name: konsole
+  - name: krita
+  - name: mpv
+  - name: rawtherapee
+  - name: skype
+    yay: aur/skypeforlinux-stable-bin
+  - name: vivaldi
+    yay: aur/vivaldi
+  - name: vlc
+
+development:
+  - name: gitg
+  - name: nvm
+    command: |
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+    user: true
+    postinstall:
+      - command: |
+          nvm install node
+        shell: fish
+  - name: visual-studio-code
+    yay: aur/visual-studio-code-bin
+
+game:
+  - name: lutris
+  - name: steam
+  - name: steam-fonts
+    yay: multilib/steam
+
+security:
+  - name: 1password
+    yay: aur/1password-cli
